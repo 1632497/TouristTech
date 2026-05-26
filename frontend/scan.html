@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Escanejar Menú - TouristTech</title>
+  <meta name="description" content="Puja una foto d'un menú per traduir-lo i detectar al·lèrgens automàticament." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- Pantalla de càrrega (s'activa quan s'envia la foto al backend) -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spinner"></div>
+  <p class="loading-text" id="loading-text">Analitzant el menú amb IA...</p>
+</div>
+
+<div class="app-container">
+
+  <!-- Capçalera -->
+  <header class="app-header">
+    <button class="btn-back" onclick="history.back()">←</button>
+    <div>
+      <h1>Escaneja un Menú</h1>
+      <p>Puja una foto i deixa que la IA faci la feina</p>
+    </div>
+  </header>
+
+  <!-- Contingut principal -->
+  <main class="app-content">
+
+    <!-- Instruccions bàsiques -->
+    <div class="card">
+      <p class="card-title">📋 Com funciona</p>
+      <ol style="font-size: 0.88rem; color: var(--color-text-light); line-height: 1.9; padding-left: 18px;">
+        <li>Fes una foto al menú del restaurant</li>
+        <li>Puja la foto aquí sota</li>
+        <li>La IA extreu el text, el tradueix i detecta al·lèrgens</li>
+        <li>Rep el resum en el teu idioma</li>
+      </ol>
+    </div>
+
+    <!-- Zona de càrrega de la imatge -->
+    <div class="card">
+      <p class="card-title">📷 Selecciona la imatge</p>
+
+      <!-- Àrea clicable per pujar imatge - el click activa l'input ocult -->
+      <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+        <span class="upload-icon">📂</span>
+        <p class="upload-title">Toca per seleccionar una foto</p>
+        <p class="upload-subtitle">Formats acceptats: JPG, PNG, WEBP</p>
+
+        <!-- Previsualització de la imatge un cop seleccionada -->
+        <img id="image-preview" alt="Previsualització del menú seleccionat" />
+      </div>
+
+      <!-- Input de fitxer ocult (el gestionem des de JS) -->
+      <input
+        type="file"
+        id="file-input"
+        accept="image/jpeg,image/png,image/webp"
+        style="display: none;"
+      />
+
+      <!-- Nom del fitxer seleccionat -->
+      <p class="text-small mt-8 text-center" id="file-name-label">Cap fitxer seleccionat</p>
+    </div>
+
+    <!-- Mostra el perfil actiu de l'usuari -->
+    <div class="card" id="active-profile-card">
+      <p class="card-title">👤 Analitzant per</p>
+      <p id="profile-summary" class="text-small">
+        <!-- Es omplirà amb JS llegint el localStorage -->
+        Carregant perfil...
+      </p>
+      <a href="profile.html" class="text-small" style="color: var(--color-primary); text-decoration:none;">
+        ✏️ Editar perfil
+      </a>
+    </div>
+
+    <!-- Missatge d'error -->
+    <div class="error-msg" id="error-msg">
+      ⚠️ Si us plau, selecciona una imatge primer.
+    </div>
+
+    <!-- Botó principal d'anàlisi -->
+    <button class="btn btn-primary" id="btn-analyze" disabled>
+      🔍 Analitzar menú
+    </button>
+
+    <p class="text-center text-small mt-8">
+      La imatge s'envia al servidor per processar-la. No es desa permanentment.
+    </p>
+
+  </main>
+
+</div> <!-- fi app-container -->
+
+<!-- Barra de navegació inferior -->
+<nav class="bottom-nav">
+  <a href="index.html" class="nav-item">
+    <span class="nav-icon">🏠</span>
+    Inici
+  </a>
+  <a href="scan.html" class="nav-item active">
+    <span class="nav-icon">📷</span>
+    Escaneja
+  </a>
+  <a href="profile.html" class="nav-item">
+    <span class="nav-icon">👤</span>
+    Perfil
+  </a>
+</nav>
+
+<!-- JavaScript de la pàgina d'escanejat -->
+<script src="js/scan.js"></script>
+
+</body>
+</html>

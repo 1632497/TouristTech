@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>El meu Perfil - TouristTech</title>
+  <meta name="description" content="Configura les teves restriccions alimentàries i preferències per a una experiència personalitzada." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div class="app-container">
+
+  <!-- Capçalera -->
+  <header class="app-header">
+    <button class="btn-back" onclick="history.back()">←</button>
+    <div>
+      <h1>El meu Perfil</h1>
+      <p>Configura les teves restriccions alimentàries</p>
+    </div>
+  </header>
+
+  <!-- Contingut -->
+  <main class="app-content">
+
+    <!-- Dades personals bàsiques -->
+    <div class="card">
+      <p class="card-title">👤 Dades bàsiques</p>
+
+      <div class="form-group">
+        <label class="form-label" for="user-name">Nom</label>
+        <input
+          type="text"
+          id="user-name"
+          class="form-input"
+          placeholder="Ex: Maria"
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="user-language">Idioma de traducció</label>
+        <!-- L'usuari tria a quin idioma vol rebre les traduccions -->
+        <select id="user-language" class="form-input">
+          <option value="ca">Català</option>
+          <option value="es">Castellà</option>
+          <option value="en">Anglès</option>
+          <option value="fr">Francès</option>
+          <option value="de">Alemany</option>
+          <option value="it">Italià</option>
+          <option value="pt">Portuguès</option>
+          <option value="ja">Japonès</option>
+          <option value="zh">Xinès</option>
+          <option value="ar">Àrab</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Restriccions alimentàries -->
+    <div class="card">
+      <p class="card-title">⚠️ Restriccions alimentàries</p>
+      <p class="text-small mb-16">Selecciona les que t'apliquen. L'app t'avisarà si un plat en conté.</p>
+
+      <!-- Grid de restriccions - es gestiona amb JS -->
+      <div class="restriction-grid" id="restrictions-grid">
+
+        <label class="restriction-item" id="label-gluten">
+          <input type="checkbox" id="check-gluten" value="gluten" />
+          <span class="restriction-checkbox" id="box-gluten"></span>
+          <span class="restriction-emoji">🌾</span>
+          <span class="restriction-text">Sense gluten</span>
+        </label>
+
+        <label class="restriction-item" id="label-lactosa">
+          <input type="checkbox" id="check-lactosa" value="lactosa" />
+          <span class="restriction-checkbox" id="box-lactosa"></span>
+          <span class="restriction-emoji">🥛</span>
+          <span class="restriction-text">Sense lactosa</span>
+        </label>
+
+        <label class="restriction-item" id="label-vegetaria">
+          <input type="checkbox" id="check-vegetaria" value="vegetaria" />
+          <span class="restriction-checkbox" id="box-vegetaria"></span>
+          <span class="restriction-emoji">🥗</span>
+          <span class="restriction-text">Vegetarià/a</span>
+        </label>
+
+        <label class="restriction-item" id="label-vega">
+          <input type="checkbox" id="check-vega" value="vega" />
+          <span class="restriction-checkbox" id="box-vega"></span>
+          <span class="restriction-emoji">🌱</span>
+          <span class="restriction-text">Vegà/a</span>
+        </label>
+
+        <label class="restriction-item" id="label-fruits-secs">
+          <input type="checkbox" id="check-fruits-secs" value="fruits_secs" />
+          <span class="restriction-checkbox" id="box-fruits-secs"></span>
+          <span class="restriction-emoji">🥜</span>
+          <span class="restriction-text">Al·lèrgia fruits secs</span>
+        </label>
+
+        <label class="restriction-item" id="label-marisc">
+          <input type="checkbox" id="check-marisc" value="marisc" />
+          <span class="restriction-checkbox" id="box-marisc"></span>
+          <span class="restriction-emoji">🦐</span>
+          <span class="restriction-text">Al·lèrgia marisc</span>
+        </label>
+
+      </div>
+    </div>
+
+    <!-- Missatge d'error si no es completen els camps -->
+    <div class="error-msg" id="error-msg">
+      ⚠️ Si us plau, introdueix el teu nom.
+    </div>
+
+    <!-- Botó de desar -->
+    <button class="btn btn-primary" id="btn-save-profile">
+      💾 Desar perfil
+    </button>
+
+    <!-- Missatge d'èxit (ocult per defecte) -->
+    <p class="text-center text-small mt-8" id="saved-msg" style="display:none; color: var(--color-success);">
+      ✅ Perfil desat correctament!
+    </p>
+
+  </main>
+
+</div> <!-- fi app-container -->
+
+<!-- Barra de navegació inferior -->
+<nav class="bottom-nav">
+  <a href="index.html" class="nav-item">
+    <span class="nav-icon">🏠</span>
+    Inici
+  </a>
+  <a href="scan.html" class="nav-item">
+    <span class="nav-icon">📷</span>
+    Escaneja
+  </a>
+  <a href="profile.html" class="nav-item active">
+    <span class="nav-icon">👤</span>
+    Perfil
+  </a>
+</nav>
+
+<!-- El nostre JavaScript -->
+<script src="js/profile.js"></script>
+
+</body>
+</html>

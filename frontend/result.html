@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resultat del Menú - TouristTech</title>
+  <meta name="description" content="Resultats de l'anàlisi del menú: traducció, al·lèrgens i recomanacions." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div class="app-container">
+
+  <!-- Capçalera -->
+  <header class="app-header">
+    <button class="btn-back" onclick="window.location.href='scan.html'">←</button>
+    <div>
+      <h1>Resultat del Menú</h1>
+      <p id="result-subtitle">Processant resultats...</p>
+    </div>
+  </header>
+
+  <!-- Contingut principal -->
+  <main class="app-content">
+
+    <!-- Missatge si no hi ha resultats (per si l'usuari accedeix directament) -->
+    <div id="no-results-msg" style="display:none;" class="card text-center">
+      <span style="font-size:3rem;">🤔</span>
+      <p style="font-weight:600; margin-top:12px;">No hi ha cap resultat</p>
+      <p class="text-small mt-8">Primer has d'escanjar un menú.</p>
+      <a href="scan.html" class="btn btn-primary mt-16">Anar a escanejar</a>
+    </div>
+
+    <!-- Resultat principal (ocult fins que es carreguen dades) -->
+    <div id="results-container" style="display:none;">
+
+      <!-- Botó de text-to-speech (lectura en veu alta) -->
+      <div class="card">
+        <p class="card-title">🔊 Accessibilitat d'Àudio</p>
+        <button class="audio-btn" id="btn-audio">
+          <span id="audio-icon">▶️</span>
+          <span id="audio-label">Llegir resultats en veu alta</span>
+        </button>
+        <p class="text-small">Utilitza el sintetitzador de veu del dispositiu</p>
+      </div>
+
+      <!-- Recomanació destacada de l'AI -->
+      <div class="recommendation-box" id="recommendation-box">
+        <p class="recommendation-title">⭐ Recomanació de l'AI</p>
+        <p class="recommendation-text" id="recommendation-text">
+          Carregant recomanació...
+        </p>
+      </div>
+
+      <!-- Resum de plats analitzats -->
+      <div class="card">
+        <p class="card-title">🍽️ Plats analitzats</p>
+
+        <!-- Llegenda de colors -->
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;">
+          <span class="dish-badge badge-safe">✅ Segur</span>
+          <span class="dish-badge badge-warning">⚠️ Precaució</span>
+          <span class="dish-badge badge-danger">🚫 Evitar</span>
+        </div>
+
+        <!-- Aquí s'injectaran les targetes de plats dinàmicament -->
+        <div id="dishes-list">
+          <!-- El JS de result.js omplirà aquest contenidor -->
+        </div>
+      </div>
+
+      <!-- Text original detectat (col·lapsable) -->
+      <div class="card">
+        <p class="card-title" style="cursor:pointer;" onclick="toggleOriginalText()">
+          📄 Text original detectat
+          <span id="toggle-icon" style="margin-left:auto; font-size:0.8rem;">▼ Mostrar</span>
+        </p>
+        <div id="original-text-box" style="display:none;">
+          <pre id="original-text" style="font-size:0.82rem; color:var(--color-text-light); white-space: pre-wrap; line-height:1.6;"></pre>
+        </div>
+      </div>
+
+      <!-- Botó per tornar a escanejar -->
+      <a href="scan.html" class="btn btn-outline mt-16">
+        📷 Escanejar un altre menú
+      </a>
+
+    </div> <!-- fi results-container -->
+
+  </main>
+
+</div> <!-- fi app-container -->
+
+<!-- Barra de navegació inferior -->
+<nav class="bottom-nav">
+  <a href="index.html" class="nav-item">
+    <span class="nav-icon">🏠</span>
+    Inici
+  </a>
+  <a href="scan.html" class="nav-item">
+    <span class="nav-icon">📷</span>
+    Escaneja
+  </a>
+  <a href="profile.html" class="nav-item">
+    <span class="nav-icon">👤</span>
+    Perfil
+  </a>
+</nav>
+
+<!-- JavaScript de la pàgina de resultats -->
+<script src="js/result.js"></script>
+
+</body>
+</html>

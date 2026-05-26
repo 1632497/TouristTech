@@ -1,0 +1,630 @@
+/* =============================================
+   TouristTech - Estils principals
+   Autor: Equip TouristTech
+   Descripció: Estils per a l'app de guia turística
+   ============================================= */
+
+/* --- Variables de color i fonts --- */
+:root {
+  --color-primary: #1e40af;       /* Blau principal */
+  --color-primary-light: #3b82f6; /* Blau clar */
+  --color-accent: #f59e0b;        /* Daurat/taronja accent */
+  --color-success: #16a34a;       /* Verd (plats segurs) */
+  --color-danger: #dc2626;        /* Vermell (al·lèrgens) */
+  --color-warning: #d97706;       /* Taronja (precaució) */
+  --color-bg: #f1f5f9;            /* Fons general */
+  --color-card: #ffffff;          /* Fons de targetes */
+  --color-text: #1e293b;          /* Text principal */
+  --color-text-light: #64748b;    /* Text secundari */
+  --color-border: #e2e8f0;        /* Vores */
+
+  --font-main: 'Poppins', sans-serif;
+  --shadow: 0 4px 16px rgba(0, 0, 0, 0.10);
+  --shadow-strong: 0 8px 32px rgba(0, 0, 0, 0.18);
+  --radius: 16px;
+  --radius-sm: 10px;
+}
+
+/* --- Reset bàsic --- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-main);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  min-height: 100vh;
+}
+
+/* --- Contenidor principal (simula pantalla mòbil centrada) --- */
+.app-container {
+  max-width: 430px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: var(--color-bg);
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* --- Capçalera (header) --- */
+.app-header {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+  color: white;
+  padding: 20px 24px 28px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.app-header .logo-icon {
+  font-size: 2rem;
+}
+
+.app-header h1 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.app-header p {
+  font-size: 0.8rem;
+  opacity: 0.85;
+  margin-top: 2px;
+}
+
+/* --- Botó "enrere" a la capçalera --- */
+.btn-back {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  margin-right: 4px;
+  border-radius: 8px;
+}
+
+.btn-back:hover {
+  background: rgba(255,255,255,0.15);
+}
+
+/* --- Contingut principal --- */
+.app-content {
+  padding: 24px 20px;
+}
+
+/* --- Targetes (cards) --- */
+.card {
+  background: var(--color-card);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--color-border);
+}
+
+.card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* --- Botons principals --- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 24px;
+  border-radius: var(--radius-sm);
+  border: none;
+  font-family: var(--font-main);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  width: 100%;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+  color: white;
+  box-shadow: 0 4px 14px rgba(30, 64, 175, 0.35);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(30, 64, 175, 0.45);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-outline {
+  background: white;
+  color: var(--color-primary);
+  border: 2px solid var(--color-primary);
+}
+
+.btn-outline:hover {
+  background: var(--color-primary);
+  color: white;
+}
+
+.btn-accent {
+  background: linear-gradient(135deg, var(--color-accent), #fbbf24);
+  color: white;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+}
+
+.btn-accent:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.45);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* --- Formularis --- */
+.form-group {
+  margin-bottom: 18px;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-text-light);
+  margin-bottom: 6px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-main);
+  font-size: 1rem;
+  color: var(--color-text);
+  background: white;
+  transition: border-color 0.2s;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--color-primary-light);
+}
+
+/* --- Checkboxes de restriccions alimentàries --- */
+.restriction-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.restriction-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--color-bg);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.restriction-item:hover {
+  border-color: var(--color-primary-light);
+  background: #eff6ff;
+}
+
+.restriction-item.active {
+  border-color: var(--color-primary);
+  background: #eff6ff;
+}
+
+.restriction-item input[type="checkbox"] {
+  display: none; /* Amaguem el checkbox per usar estil propi */
+}
+
+.restriction-checkbox {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--color-border);
+  border-radius: 5px;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s;
+  font-size: 0.75rem;
+}
+
+.restriction-item.active .restriction-checkbox {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: white;
+}
+
+.restriction-text {
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.restriction-emoji {
+  font-size: 1.2rem;
+}
+
+/* --- Zona de càrrega d'imatge --- */
+.upload-zone {
+  border: 3px dashed var(--color-border);
+  border-radius: var(--radius);
+  padding: 40px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.upload-zone:hover {
+  border-color: var(--color-primary-light);
+  background: #eff6ff;
+}
+
+.upload-zone.has-image {
+  border-style: solid;
+  border-color: var(--color-primary);
+  padding: 12px;
+}
+
+.upload-icon {
+  font-size: 3.5rem;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.upload-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 6px;
+}
+
+.upload-subtitle {
+  font-size: 0.85rem;
+  color: var(--color-text-light);
+}
+
+/* Previsualització de la imatge pujada */
+#image-preview {
+  width: 100%;
+  border-radius: var(--radius-sm);
+  max-height: 250px;
+  object-fit: cover;
+  display: none;
+}
+
+/* --- Indicador de càrrega (loading) --- */
+.loading-overlay {
+  display: none;   /* Per defecte ocult, s'activa amb JS */
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 16px;
+  color: white;
+}
+
+.loading-overlay.visible {
+  display: flex;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-text {
+  font-size: 1rem;
+  font-weight: 500;
+  text-align: center;
+  max-width: 220px;
+}
+
+/* --- Etiquetes de plats (resultat) --- */
+.dish-card {
+  background: var(--color-card);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  border-left: 4px solid var(--color-border);
+  box-shadow: var(--shadow);
+}
+
+.dish-card.safe {
+  border-left-color: var(--color-success);
+}
+
+.dish-card.danger {
+  border-left-color: var(--color-danger);
+}
+
+.dish-card.warning {
+  border-left-color: var(--color-warning);
+}
+
+.dish-name {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.dish-original {
+  font-size: 0.8rem;
+  color: var(--color-text-light);
+  margin-bottom: 8px;
+}
+
+.dish-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  margin-right: 6px;
+  margin-top: 4px;
+}
+
+.badge-safe {
+  background: #dcfce7;
+  color: var(--color-success);
+}
+
+.badge-danger {
+  background: #fee2e2;
+  color: var(--color-danger);
+}
+
+.badge-warning {
+  background: #fef3c7;
+  color: var(--color-warning);
+}
+
+/* --- Recomanació especial --- */
+.recommendation-box {
+  background: linear-gradient(135deg, #fffbeb, #fef3c7);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.recommendation-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.recommendation-text {
+  font-size: 0.9rem;
+  color: var(--color-text);
+  line-height: 1.5;
+}
+
+/* --- Botó d'àudio --- */
+.audio-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 14px 20px;
+  font-family: var(--font-main);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  margin-bottom: 12px;
+  transition: all 0.2s;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.3);
+}
+
+.audio-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
+}
+
+.audio-btn.playing {
+  background: linear-gradient(135deg, #a855f7, #7c3aed);
+}
+
+/* --- Pantalla d'inici (index.html) --- */
+.hero-section {
+  background: linear-gradient(160deg, var(--color-primary) 0%, var(--color-primary-light) 60%, #7dd3fc 100%);
+  color: white;
+  padding: 60px 24px 40px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-section::before {
+  content: '';
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 50%;
+  top: -100px;
+  right: -80px;
+}
+
+.hero-section::after {
+  content: '';
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 50%;
+  bottom: -60px;
+  left: -40px;
+}
+
+.hero-emoji {
+  font-size: 5rem;
+  display: block;
+  margin-bottom: 20px;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.hero-title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  letter-spacing: -1px;
+  margin-bottom: 12px;
+}
+
+.hero-subtitle {
+  font-size: 1rem;
+  opacity: 0.9;
+  line-height: 1.6;
+  max-width: 320px;
+  margin: 0 auto 32px;
+}
+
+/* --- Secció de característiques (inici) --- */
+.features-section {
+  padding: 28px 20px;
+}
+
+.feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: white;
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+}
+
+.feature-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.feature-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.feature-desc {
+  font-size: 0.82rem;
+  color: var(--color-text-light);
+  line-height: 1.5;
+}
+
+/* --- Barra de navegació inferior --- */
+.bottom-nav {
+  position: sticky;
+  bottom: 0;
+  background: white;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0 16px;
+  box-shadow: 0 -4px 16px rgba(0,0,0,0.08);
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+  color: var(--color-text-light);
+  font-size: 0.7rem;
+  font-weight: 500;
+  padding: 4px 16px;
+  border-radius: 8px;
+  transition: color 0.2s;
+}
+
+.nav-item.active {
+  color: var(--color-primary);
+}
+
+.nav-item .nav-icon {
+  font-size: 1.4rem;
+}
+
+/* --- Estils petits d'utilitat --- */
+.text-center { text-align: center; }
+.mt-8 { margin-top: 8px; }
+.mt-16 { margin-top: 16px; }
+.mb-16 { margin-bottom: 16px; }
+.text-small { font-size: 0.82rem; color: var(--color-text-light); }
+
+/* --- Missatge d'error --- */
+.error-msg {
+  background: #fee2e2;
+  color: var(--color-danger);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  font-size: 0.88rem;
+  margin-bottom: 12px;
+  display: none;
+}
+
+.error-msg.visible {
+  display: block;
+}
+
+/* --- Responsive per a pantalles grans (simula mòbil centrat) --- */
+@media (min-width: 500px) {
+  .app-container {
+    border-left: 1px solid var(--color-border);
+    border-right: 1px solid var(--color-border);
+    min-height: 100vh;
+  }
+}
