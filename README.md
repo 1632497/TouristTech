@@ -1,141 +1,105 @@
-# TouristTech 🍽️ - Guia Multilingüe i Assistent Gastronòmic
+# TouristTech 🌍🍽️
 
-Aplicació web que analitza fotos de menús de restaurant, els tradueix a l'idioma de l'usuari i detecta al·lèrgens automàticament.
+**TouristTech** is a multilingual tourist assistant and dietary safety filter. It translates restaurant menus via photo, detects ingredients using Gemini AI, filters for 12 different dietary restrictions, and provides audio narration for accessibility.
 
-## 🗂️ Estructura del projecte
+This repository contains the complete production-ready version, built with Vanilla HTML/JS frontend and a serverless Google Cloud Platform (GCP) backend.
 
+## 🏗️ Architecture
+
+```text
+App Mòbil (Web App)
+    ↓ (Puts photo)
+Cloud Storage bucket (`touristtech-menu-images`)
+    ↓ (Eventarc trigger)
+Cloud Function (Node.js Gen2)
+    ├── Cloud SQL (PostgreSQL)  → Reads user profile (language, restrictions)
+    ├── Cloud Vision API        → Extracts raw text via OCR
+    ├── Vertex AI (Gemini Pro)  → Identifies dishes, infers ingredients, filters safety
+    ├── Cloud Translation API   → Translates to user's native language
+    └── Cloud Text-to-Speech    → Generates MP3 audio narration (WaveNet)
+         ↓
+    Saves MP3 to Cloud Storage (`touristtech-audio-output`)
+    Returns signed audio URL & structured JSON to frontend
 ```
-hackathon/
-├── frontend/           → Interfície d'usuari (HTML + CSS + JS pla)
-│   ├── index.html      → Pantalla de benvinguda
-│   ├── profile.html    → Configuració del perfil dietètic
-│   ├── scan.html       → Càrrega de la foto del menú
-│   ├── result.html     → Resultats: traducció + al·lèrgens
-│   ├── css/style.css   → Tots els estils de l'app
-│   └── js/
-│       ├── profile.js  → Desa/carrega el perfil (localStorage)
-│       ├── scan.js     → Envia la imatge al backend
-│       └── result.js   → Pinta els resultats + text-to-speech
-│
-└── backend/            → Servidor API (Node.js + Express)
-    ├── server.js       → API REST amb dades simulades (mock)
-    ├── package.json    → Dependències
-    └── .env.example    → Plantilla de variables d'entorn
+
+## 🛠️ Tech Stack
+- **Frontend**: Vanilla HTML5, CSS3, JavaScript
+- **Backend (API)**: Node.js, Express (dual mode: Mock / Production GCP)
+- **Database**: Cloud SQL (PostgreSQL 15)
+- **Infrastructure**: Terraform (IaC)
+- **Auth**: Firebase Authentication
+
+---
+
+## 🚀 Deployment Guide
+
+### 1. GCP Project Setup
+Create a GCP project and enable Billing.
+
+### 2. Firebase Setup
+1. Go to the [Firebase Console](https://console.firebase.google.com/) and create a project (link it to your GCP project).
+2. Enable **Authentication** (Email/Password).
+3. Register a Web App in Firebase settings to get your Firebase SDK config snippet.
+4. Paste the config into `frontend/js/config.js`.
+
+### 3. Terraform (Infrastructure as Code)
+Deploy the Cloud SQL instance, Storage Buckets, IAM roles, and Cloud Function automatically.
+
+```bash
+cd backend/terraform
+terraform init
+
+# Create a terraform.tfvars file with your secrets:
+# project_id  = "your-gcp-project"
+# db_password = "SuperSecretPassword123"
+
+terraform plan
+terraform apply
 ```
 
-## 🚀 Com executar el projecte
+### 4. Database Schema Migration
+Connect to your new Cloud SQL instance and apply the schema:
 
-### Pas 1: Iniciar el backend
+```bash
+# Obtain Cloud SQL IP from Terraform output
+psql -h <CLOUD_SQL_IP> -U touristtech_user -d touristtech -f backend/sql/schema.sql
+```
 
+### 5. Running the Backend Locally
+You can run the Express backend locally. It has two modes:
+
+**Mock Mode (Default)**
+Uses simulated responses. No GCP credentials needed. Fast for frontend dev.
 ```bash
 cd backend
 npm install
-node server.js
+npm run dev
 ```
 
-El servidor s'iniciarà a `http://localhost:3000`
+**Production Mode**
+Connects to real GCP APIs. Requires `GOOGLE_APPLICATION_CREDENTIALS` or `gcloud auth application-default login`.
+1. Copy `backend/.env.example` to `backend/.env`
+2. Update the values with your Cloud SQL connection string and buckets.
+3. Set `USE_MOCK=false`.
+4. Run `npm run dev`.
 
-### Pas 2: Obrir el frontend
+### 6. Running the Frontend
+The frontend uses standard web technologies. You can serve it using any HTTP server:
 
-Obre simplement el fitxer `frontend/index.html` al navegador (doble clic).
-
-> ⚠️ **Nota**: Per evitar errors CORS amb `fetch()`, es recomana usar una extensió com "Live Server" de VS Code o executar:
-> ```bash
-> # Si tens Python instal·lat:
-> cd frontend
-> python -m http.server 8080
-> # Després obre http://localhost:8080
-> ```
-
-## 🔄 Flux de l'aplicació (versió demo)
-
-```
-[Usuari] → Configura perfil (restriccions + idioma)
-         → Puja foto del menú
-         → Frontend envia imatge (base64) + perfil → Backend (POST /api/analyze)
-         → Backend retorna: plats traduïts + alertes al·lèrgens + recomanació
-         → Frontend mostra resultat + opció text-to-speech
+```bash
+cd frontend
+# Using Python
+python -m http.server 8080
+# Open http://localhost:8080
 ```
 
-## ⚙️ Endpoints de l'API
+---
 
-### `GET /`
-Comprova que el servidor funciona.
+## 👤 User Flow
 
-**Resposta:**
-```json
-{
-  "status": "ok",
-  "message": "Servidor TouristTech funcionant correctament! 🚀"
-}
-```
-
-### `POST /api/analyze`
-Analitza una imatge de menú.
-
-**Body (JSON):**
-```json
-{
-  "image": "base64_de_la_imatge",
-  "language": "ca",
-  "restrictions": ["gluten", "lactosa"]
-}
-```
-
-**Resposta:**
-```json
-{
-  "success": true,
-  "originalText": "Text extret per OCR...",
-  "dishes": [
-    {
-      "name": "Pasta al pesto",
-      "translated": "Pasta amb pesto",
-      "safe": false,
-      "warnings": ["Gluten"]
-    }
-  ],
-  "recommendation": "Recomanació de l'AI...",
-  "language": "ca"
-}
-```
-
-## 🏗️ Arquitectura prevista (Google Cloud Platform)
-
-```
-App Mòbil
-    ↓ (puja foto)
-Cloud Storage
-    ↓ (dispara event)
-Cloud Function
-    ├── Cloud SQL        → Llegeix perfil d'usuari
-    ├── Cloud Vision API → Extreu text de la imatge (OCR)
-    ├── Vertex AI Gemini → Analitza plats + filtra al·lèrgens
-    ├── Cloud Translation→ Tradueix al idioma de l'usuari
-    └── Text-to-Speech   → Genera àudio mp3
-         ↓
-     Resposta a l'app
-```
-
-## ⚠️ Estat actual (primera mentoria)
-
-| Funcionalitat | Estat |
-|---|---|
-| Frontend (UI) | ✅ Implementat |
-| Perfil d'usuari (localStorage) | ✅ Implementat |
-| Càrrega d'imatge | ✅ Implementat |
-| Backend Express (API mock) | ✅ Implementat |
-| Text-to-speech (Web API) | ✅ Implementat |
-| Cloud Vision API (OCR real) | 🔜 Per implementar |
-| Vertex AI / Gemini | 🔜 Per implementar |
-| Cloud Translation API | 🔜 Per implementar |
-| Cloud SQL (base de dades) | 🔜 Per implementar |
-| Cloud Storage (pujar imatges) | 🔜 Per implementar |
-
-## 👥 Tecnologies usades
-
-- **Frontend**: HTML5, CSS3, JavaScript (Vanilla)
-- **Backend**: Node.js, Express.js
-- **Emmagatzematge local**: localStorage / sessionStorage
-- **Àudio**: Web Speech API (SpeechSynthesis)
-- **Futur - GCP**: Cloud Functions, Cloud Vision, Vertex AI, Cloud Translation, Text-to-Speech, Cloud Storage, Cloud SQL
+1. **Login/Signup**: Handled via Firebase Auth.
+2. **Profile Setup**: Select from 12 dietary restrictions (Gluten, Lactose, Halal, Kosher, Vegan, etc.) and assign severity (Preference, Intolerance, Allergy).
+3. **Capture**: Take a photo of a menu.
+4. **Processing**: Sent securely to the backend via Firebase bearer token.
+5. **Results**: Dishes are categorized as Safe (Green), Warning (Yellow), or Danger (Red). Original names and inferred ingredients are shown.
+6. **Accessibility**: Listen to the menu translation using the generated MP3 audio player.

@@ -1,0 +1,18 @@
+{
+  "nJX7GYbGjwctH3veIiE2kqOZZt32": {
+    "name": "JUda",
+    "language": "ca",
+    "restrictions": [
+      {
+        "restriction_type": "SHELLFISH",
+        "severity": "PREFERENCE",
+        "notes": null
+      },
+      {
+        "restriction_type": "HALAL",
+        "severity": "PREFERENCE",
+        "notes": null
+      }
+    ]
+  }
+}

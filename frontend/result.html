@@ -9,6 +9,12 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
 </head>
 <body>
 
@@ -38,13 +44,12 @@
     <div id="results-container" style="display:none;">
 
       <!-- Botó de text-to-speech (lectura en veu alta) -->
-      <div class="card">
-        <p class="card-title">🔊 Accessibilitat d'Àudio</p>
-        <button class="audio-btn" id="btn-audio">
-          <span id="audio-icon">▶️</span>
-          <span id="audio-label">Llegir resultats en veu alta</span>
-        </button>
-        <p class="text-small">Utilitza el sintetitzador de veu del dispositiu</p>
+      <div class="card" id="audio-card" style="display:none;">
+        <p class="card-title">🔊 Escoltar el menú</p>
+        <audio id="audio-player" controls style="width:100%; margin-top:10px;">
+          <source id="audio-source" src="" type="audio/mpeg">
+          El teu navegador no suporta l'element d'àudio.
+        </audio>
       </div>
 
       <!-- Recomanació destacada de l'AI -->

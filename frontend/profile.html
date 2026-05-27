@@ -9,6 +9,12 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
 </head>
 <body>
 
@@ -66,47 +72,177 @@
       <!-- Grid de restriccions - es gestiona amb JS -->
       <div class="restriction-grid" id="restrictions-grid">
 
-        <label class="restriction-item" id="label-gluten">
-          <input type="checkbox" id="check-gluten" value="gluten" />
-          <span class="restriction-checkbox" id="box-gluten"></span>
-          <span class="restriction-emoji">🌾</span>
-          <span class="restriction-text">Sense gluten</span>
-        </label>
+        <!-- 1. Gluten -->
+        <div class="restriction-item" id="item-gluten">
+          <label class="restriction-label" id="label-gluten">
+            <input type="checkbox" id="check-gluten" value="GLUTEN" />
+            <span class="restriction-checkbox" id="box-gluten"></span>
+            <span class="restriction-emoji">🌾</span>
+            <span class="restriction-text">Sense gluten</span>
+          </label>
+          <select class="severity-select" id="sev-gluten" style="display:none;">
+            <option value="PREFERENCE">Preferència</option>
+            <option value="INTOLERANCE">Intolerància</option>
+            <option value="ALLERGY">Al·lèrgia (Greu)</option>
+          </select>
+        </div>
 
-        <label class="restriction-item" id="label-lactosa">
-          <input type="checkbox" id="check-lactosa" value="lactosa" />
-          <span class="restriction-checkbox" id="box-lactosa"></span>
-          <span class="restriction-emoji">🥛</span>
-          <span class="restriction-text">Sense lactosa</span>
-        </label>
+        <!-- 2. Lactosa -->
+        <div class="restriction-item" id="item-lactosa">
+          <label class="restriction-label" id="label-lactosa">
+            <input type="checkbox" id="check-lactosa" value="LACTOSE" />
+            <span class="restriction-checkbox" id="box-lactosa"></span>
+            <span class="restriction-emoji">🥛</span>
+            <span class="restriction-text">Sense lactosa</span>
+          </label>
+          <select class="severity-select" id="sev-lactosa" style="display:none;">
+            <option value="PREFERENCE">Preferència</option>
+            <option value="INTOLERANCE">Intolerància</option>
+            <option value="ALLERGY">Al·lèrgia (Greu)</option>
+          </select>
+        </div>
 
-        <label class="restriction-item" id="label-vegetaria">
-          <input type="checkbox" id="check-vegetaria" value="vegetaria" />
-          <span class="restriction-checkbox" id="box-vegetaria"></span>
-          <span class="restriction-emoji">🥗</span>
-          <span class="restriction-text">Vegetarià/a</span>
-        </label>
+        <!-- 3. Fruits Secs -->
+        <div class="restriction-item" id="item-nuts">
+          <label class="restriction-label" id="label-nuts">
+            <input type="checkbox" id="check-nuts" value="NUTS" />
+            <span class="restriction-checkbox" id="box-nuts"></span>
+            <span class="restriction-emoji">🥜</span>
+            <span class="restriction-text">Sense fruits secs</span>
+          </label>
+          <select class="severity-select" id="sev-nuts" style="display:none;">
+            <option value="PREFERENCE">Preferència</option>
+            <option value="INTOLERANCE">Intolerància</option>
+            <option value="ALLERGY">Al·lèrgia (Greu)</option>
+          </select>
+        </div>
 
-        <label class="restriction-item" id="label-vega">
-          <input type="checkbox" id="check-vega" value="vega" />
-          <span class="restriction-checkbox" id="box-vega"></span>
-          <span class="restriction-emoji">🌱</span>
-          <span class="restriction-text">Vegà/a</span>
-        </label>
+        <!-- 4. Marisc -->
+        <div class="restriction-item" id="item-shellfish">
+          <label class="restriction-label" id="label-shellfish">
+            <input type="checkbox" id="check-shellfish" value="SHELLFISH" />
+            <span class="restriction-checkbox" id="box-shellfish"></span>
+            <span class="restriction-emoji">🦐</span>
+            <span class="restriction-text">Sense marisc</span>
+          </label>
+          <select class="severity-select" id="sev-shellfish" style="display:none;">
+            <option value="PREFERENCE">Preferència</option>
+            <option value="INTOLERANCE">Intolerància</option>
+            <option value="ALLERGY">Al·lèrgia (Greu)</option>
+          </select>
+        </div>
 
-        <label class="restriction-item" id="label-fruits-secs">
-          <input type="checkbox" id="check-fruits-secs" value="fruits_secs" />
-          <span class="restriction-checkbox" id="box-fruits-secs"></span>
-          <span class="restriction-emoji">🥜</span>
-          <span class="restriction-text">Al·lèrgia fruits secs</span>
-        </label>
+        <!-- 5. Ous -->
+        <div class="restriction-item" id="item-eggs">
+          <label class="restriction-label" id="label-eggs">
+            <input type="checkbox" id="check-eggs" value="EGGS" />
+            <span class="restriction-checkbox" id="box-eggs"></span>
+            <span class="restriction-emoji">🥚</span>
+            <span class="restriction-text">Sense ou</span>
+          </label>
+          <select class="severity-select" id="sev-eggs" style="display:none;">
+            <option value="PREFERENCE">Preferència</option>
+            <option value="INTOLERANCE">Intolerància</option>
+            <option value="ALLERGY">Al·lèrgia (Greu)</option>
+          </select>
+        </div>
 
-        <label class="restriction-item" id="label-marisc">
-          <input type="checkbox" id="check-marisc" value="marisc" />
-          <span class="restriction-checkbox" id="box-marisc"></span>
-          <span class="restriction-emoji">🦐</span>
-          <span class="restriction-text">Al·lèrgia marisc</span>
-        </label>
+        <!-- 6. Soja -->
+        <div class="restriction-item" id="item-soy">
+          <label class="restriction-label" id="label-soy">
+            <input type="checkbox" id="check-soy" value="SOY" />
+            <span class="restriction-checkbox" id="box-soy"></span>
+            <span class="restriction-emoji">🫘</span>
+            <span class="restriction-text">Sense soja</span>
+          </label>
+          <select class="severity-select" id="sev-soy" style="display:none;">
+            <option value="PREFERENCE">Preferència</option>
+            <option value="INTOLERANCE">Intolerància</option>
+            <option value="ALLERGY">Al·lèrgia (Greu)</option>
+          </select>
+        </div>
+
+        <!-- 7. Porc -->
+        <div class="restriction-item" id="item-pork">
+          <label class="restriction-label" id="label-pork">
+            <input type="checkbox" id="check-pork" value="PORK" />
+            <span class="restriction-checkbox" id="box-pork"></span>
+            <span class="restriction-emoji">🥓</span>
+            <span class="restriction-text">Sense porc</span>
+          </label>
+          <select class="severity-select" id="sev-pork" style="display:none;">
+            <option value="PREFERENCE">Preferència</option>
+            <option value="INTOLERANCE">Intolerància</option>
+            <option value="ALLERGY">Al·lèrgia (Greu)</option>
+          </select>
+        </div>
+
+        <!-- 8. Alcohol -->
+        <div class="restriction-item" id="item-alcohol">
+          <label class="restriction-label" id="label-alcohol">
+            <input type="checkbox" id="check-alcohol" value="ALCOHOL" />
+            <span class="restriction-checkbox" id="box-alcohol"></span>
+            <span class="restriction-emoji">🍷</span>
+            <span class="restriction-text">Sense alcohol</span>
+          </label>
+          <select class="severity-select" id="sev-alcohol" style="display:none;">
+            <option value="PREFERENCE">Preferència</option>
+            <option value="INTOLERANCE">Intolerància</option>
+            <option value="ALLERGY">Al·lèrgia (Greu)</option>
+          </select>
+        </div>
+
+        <!-- 9. Vegetarià -->
+        <div class="restriction-item" id="item-vegetarian">
+          <label class="restriction-label" id="label-vegetarian">
+            <input type="checkbox" id="check-vegetarian" value="VEGETARIAN" />
+            <span class="restriction-checkbox" id="box-vegetarian"></span>
+            <span class="restriction-emoji">🥗</span>
+            <span class="restriction-text">Vegetarià/a</span>
+          </label>
+          <select class="severity-select" id="sev-vegetarian" style="display:none;">
+            <option value="PREFERENCE">Preferència</option>
+          </select>
+        </div>
+
+        <!-- 10. Vegà -->
+        <div class="restriction-item" id="item-vegan">
+          <label class="restriction-label" id="label-vegan">
+            <input type="checkbox" id="check-vegan" value="VEGAN" />
+            <span class="restriction-checkbox" id="box-vegan"></span>
+            <span class="restriction-emoji">🌱</span>
+            <span class="restriction-text">Vegà/a</span>
+          </label>
+          <select class="severity-select" id="sev-vegan" style="display:none;">
+            <option value="PREFERENCE">Preferència</option>
+          </select>
+        </div>
+
+        <!-- 11. Halal -->
+        <div class="restriction-item" id="item-halal">
+          <label class="restriction-label" id="label-halal">
+            <input type="checkbox" id="check-halal" value="HALAL" />
+            <span class="restriction-checkbox" id="box-halal"></span>
+            <span class="restriction-emoji">☪️</span>
+            <span class="restriction-text">Halal</span>
+          </label>
+          <select class="severity-select" id="sev-halal" style="display:none;">
+            <option value="PREFERENCE">Preferència</option>
+          </select>
+        </div>
+
+        <!-- 12. Kosher -->
+        <div class="restriction-item" id="item-kosher">
+          <label class="restriction-label" id="label-kosher">
+            <input type="checkbox" id="check-kosher" value="KOSHER" />
+            <span class="restriction-checkbox" id="box-kosher"></span>
+            <span class="restriction-emoji">✡️</span>
+            <span class="restriction-text">Kosher</span>
+          </label>
+          <select class="severity-select" id="sev-kosher" style="display:none;">
+            <option value="PREFERENCE">Preferència</option>
+          </select>
+        </div>
 
       </div>
     </div>

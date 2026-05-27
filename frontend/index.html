@@ -12,6 +12,14 @@
 
   <!-- Els nostres estils -->
   <link rel="stylesheet" href="css/style.css" />
+
+  <!-- Firebase App & Auth -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  
+  <!-- Els nostres scripts base -->
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
 </head>
 <body>
 
@@ -19,6 +27,10 @@
 
   <!-- Secció principal de benvinguda (hero) -->
   <section class="hero-section">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h2 id="user-greeting" style="font-size: 1.2rem; font-weight: 600;">Hola!</h2>
+      <button onclick="touristAuth.logout()" class="btn btn-outline" style="padding: 6px 12px; font-size: 0.8rem; width: auto; border-color: white; color: white; background: transparent;">Surt</button>
+    </div>
     <span class="hero-emoji">🍽️</span>
     <h1 class="hero-title">TouristTech</h1>
     <p class="hero-subtitle">
@@ -81,6 +93,16 @@
     </p>
   </section>
 
+  <!-- Historial recent -->
+  <section class="features-section" style="padding-top: 0;">
+    <h2 style="font-size:1.1rem; font-weight:700; margin-bottom:16px; color: var(--color-text);">
+      Historial d'escanejos
+    </h2>
+    <div id="history-list">
+      <p class="text-small text-center" id="history-loading">Carregant historial...</p>
+    </div>
+  </section>
+
 </div> <!-- fi app-container -->
 
 <!-- Barra de navegació inferior -->
@@ -98,6 +120,48 @@
     Perfil
   </a>
 </nav>
+
+</nav>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // Configura la salutació
+  firebase.auth().onAuthStateChanged(async (user) => {
+    if (user) {
+      document.getElementById('user-greeting').textContent = `Hola, ${user.email.split('@')[0]}!`;
+      
+      // Carrega l'historial
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/history?userId=${user.uid}`);
+        if (res.ok) {
+          const history = await res.json();
+          const listEl = document.getElementById('history-list');
+          
+          if (history.length === 0) {
+            listEl.innerHTML = '<p class="text-small text-center">Encara no has escanejat cap menú.</p>';
+          } else {
+            listEl.innerHTML = '';
+            history.forEach(item => {
+              const date = new Date(item.created_at).toLocaleDateString();
+              const div = document.createElement('div');
+              div.className = 'history-item';
+              div.innerHTML = `
+                <div style="flex:1;">
+                  <p style="font-weight:600; font-size:0.9rem;">Menú escanejat</p>
+                  <p class="text-small">${date} • Estat: ${item.status}</p>
+                </div>
+              `;
+              listEl.appendChild(div);
+            });
+          }
+        }
+      } catch (err) {
+        document.getElementById('history-loading').textContent = 'Error carregant historial.';
+      }
+    }
+  });
+});
+</script>
 
 </body>
 </html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Accés - TouristTech</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+
+  <!-- Firebase App (the core Firebase SDK) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <!-- Firebase Auth -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  
+  <!-- Els nostres scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+</head>
+<body class="login-body">
+
+<div class="app-container login-container">
+  
+  <div class="login-header">
+    <span class="hero-emoji" style="font-size:4rem; margin-bottom:10px;">🍽️</span>
+    <h1 class="hero-title" style="color:var(--color-primary)">TouristTech</h1>
+    <p class="text-small" style="margin-bottom:30px;">Inicia sessió per desar les teves restriccions alimentàries</p>
+  </div>
+
+  <div class="card login-card">
+    
+    <!-- Formulari Login -->
+    <div id="form-login">
+      <h2 class="card-title" style="justify-content:center; margin-bottom:20px;">Iniciar Sessió</h2>
+      
+      <div class="form-group">
+        <label class="form-label" for="login-email">Correu electrònic</label>
+        <input type="email" id="login-email" class="form-input" placeholder="correu@exemple.com">
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label" for="login-password">Contrasenya</label>
+        <input type="password" id="login-password" class="form-input" placeholder="••••••••">
+      </div>
+      
+      <div class="error-msg" id="login-error">Error d'inici de sessió</div>
+      
+      <button class="btn btn-primary" id="btn-login" style="margin-top:10px;">Entrar</button>
+      
+      <p class="text-center text-small" style="margin-top:20px;">
+        No tens compte? <a href="#" id="show-register" style="color:var(--color-primary); font-weight:600;">Registra't</a>
+      </p>
+    </div>
+
+    <!-- Formulari Registre (ocult per defecte) -->
+    <div id="form-register" style="display:none;">
+      <h2 class="card-title" style="justify-content:center; margin-bottom:20px;">Crear Compte</h2>
+      
+      <div class="form-group">
+        <label class="form-label" for="reg-email">Correu electrònic</label>
+        <input type="email" id="reg-email" class="form-input" placeholder="correu@exemple.com">
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label" for="reg-password">Contrasenya (mínim 6 caràcters)</label>
+        <input type="password" id="reg-password" class="form-input" placeholder="••••••••">
+      </div>
+      
+      <div class="error-msg" id="reg-error">Error al crear compte</div>
+      
+      <button class="btn btn-accent" id="btn-register" style="margin-top:10px;">Registrar-se</button>
+      
+      <p class="text-center text-small" style="margin-top:20px;">
+        Ja tens compte? <a href="#" id="show-login" style="color:var(--color-primary); font-weight:600;">Inicia sessió</a>
+      </p>
+    </div>
+    
+  </div>
+
+</div>
+
+<script>
+  // Lògica d'interfície per a login/registre
+  document.addEventListener('DOMContentLoaded', () => {
+    const formLogin = document.getElementById('form-login');
+    const formRegister = document.getElementById('form-register');
+    const showRegister = document.getElementById('show-register');
+    const showLogin = document.getElementById('show-login');
+    
+    const btnLogin = document.getElementById('btn-login');
+    const btnRegister = document.getElementById('btn-register');
+    
+    showRegister.addEventListener('click', (e) => {
+      e.preventDefault();
+      formLogin.style.display = 'none';
+      formRegister.style.display = 'block';
+    });
+    
+    showLogin.addEventListener('click', (e) => {
+      e.preventDefault();
+      formRegister.style.display = 'none';
+      formLogin.style.display = 'block';
+    });
+    
+    // Acció de Login
+    btnLogin.addEventListener('click', () => {
+      const email = document.getElementById('login-email').value;
+      const pass = document.getElementById('login-password').value;
+      const errBox = document.getElementById('login-error');
+      
+      if (!email || !pass) {
+        errBox.textContent = "Omple tots els camps";
+        errBox.classList.add('visible');
+        return;
+      }
+      
+      btnLogin.disabled = true;
+      btnLogin.textContent = "Entrant...";
+      
+      firebase.auth().signInWithEmailAndPassword(email, pass)
+        .then(() => {
+          // El redirect el fa auth.js automàticament
+        })
+        .catch((error) => {
+          btnLogin.disabled = false;
+          btnLogin.textContent = "Entrar";
+          errBox.textContent = error.message;
+          errBox.classList.add('visible');
+        });
+    });
+    
+    // Acció de Registre
+    btnRegister.addEventListener('click', () => {
+      const email = document.getElementById('reg-email').value;
+      const pass = document.getElementById('reg-password').value;
+      const errBox = document.getElementById('reg-error');
+      
+      if (!email || !pass) {
+        errBox.textContent = "Omple tots els camps";
+        errBox.classList.add('visible');
+        return;
+      }
+      
+      btnRegister.disabled = true;
+      btnRegister.textContent = "Creant...";
+      
+      firebase.auth().createUserWithEmailAndPassword(email, pass)
+        .then(() => {
+          // El redirect el fa auth.js automàticament
+        })
+        .catch((error) => {
+          btnRegister.disabled = false;
+          btnRegister.textContent = "Registrar-se";
+          errBox.textContent = error.message;
+          errBox.classList.add('visible');
+        });
+    });
+  });
+</script>
+
+</body>
+</html>

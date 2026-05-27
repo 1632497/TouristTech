@@ -1,0 +1,17 @@
+{
+  "name": "touristtech-analyze-http",
+  "version": "1.0.0",
+  "description": "TouristTech – HTTP Cloud Function: analyze menu image",
+  "main": "index.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@google-cloud/functions-framework": "^3.3.0",
+    "@google-cloud/storage": "^7.9.0",
+    "@google-cloud/vision": "^4.3.2",
+    "@google-cloud/translate": "^8.3.0",
+    "@google-cloud/text-to-speech": "^5.4.0",
+    "@google/generative-ai": "^0.24.0"
+  }
+}
