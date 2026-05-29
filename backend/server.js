@@ -38,7 +38,6 @@ const {
   DB_NAME,
   DB_USER,
   DB_PASSWORD,
-  USE_MOCK = 'false',  // Set to 'true' to use mock data (no GCP APIs)
 } = process.env;
 
 // ─── Express setup ───
@@ -47,48 +46,45 @@ app.use(cors());
 app.use(express.json({ limit: '15mb' }));
 app.use(express.static(path.join(__dirname, '..', 'frontend')));
 
-// ─── GCP Clients (only initialized if not in mock mode) ───
-let storageClient, visionClient, translateClient, ttsClient, geminiModel, pool;
+// ─── GCP Clients ───
+const storageClient = new Storage({ projectId: GCP_PROJECT_ID });
+const visionClient = new vision.ImageAnnotatorClient();
+const translateClient = new TranslationServiceClient();
+const ttsClient = new textToSpeech.TextToSpeechClient();
 
-if (USE_MOCK !== 'true') {
-  storageClient = new Storage({ projectId: GCP_PROJECT_ID });
-  visionClient = new vision.ImageAnnotatorClient();
-  translateClient = new TranslationServiceClient();
-  ttsClient = new textToSpeech.TextToSpeechClient();
+// Robust initialization for Gemini:
+// 1. If a valid Google AI Studio key is provided, use it.
+// 2. Otherwise, fall back to Vertex AI using Google Cloud credentials.json.
+let genAI;
+const hasValidApiKey = GEMINI_API_KEY && 
+                       GEMINI_API_KEY !== 'posa_aqui_la_teva_clau_AIzaSy' && 
+                       (GEMINI_API_KEY.startsWith('AIzaSy') || GEMINI_API_KEY.startsWith('AQ'));
 
-  // Robust initialization for Gemini:
-  // 1. If a valid Google AI Studio key is provided, use it.
-  // 2. Otherwise, fall back to Vertex AI using Google Cloud credentials.json.
-  let genAI;
-  const hasValidApiKey = GEMINI_API_KEY && 
-                         GEMINI_API_KEY !== 'posa_aqui_la_teva_clau_AIzaSy' && 
-                         (GEMINI_API_KEY.startsWith('AIzaSy') || GEMINI_API_KEY.startsWith('AQ'));
+if (GEMINI_API_KEY && GEMINI_API_KEY !== 'posa_aqui_la_teva_clau_AIzaSy' && !GEMINI_API_KEY.startsWith('AIzaSy') && !GEMINI_API_KEY.startsWith('AQ')) {
+  console.warn(`⚠️ ALERTA: La clau GEMINI_API_KEY de .env ("${GEMINI_API_KEY.slice(0, 8)}...") no comença per "AIzaSy" ni per "AQ". Les claus d'API de Google AI Studio sempre comencen per una d'aquestes dues seqüències. S'intentarà fer servir Vertex AI.`);
+}
 
-  if (GEMINI_API_KEY && GEMINI_API_KEY !== 'posa_aqui_la_teva_clau_AIzaSy' && !GEMINI_API_KEY.startsWith('AIzaSy') && !GEMINI_API_KEY.startsWith('AQ')) {
-    console.warn(`⚠️ ALERTA: La clau GEMINI_API_KEY de .env ("${GEMINI_API_KEY.slice(0, 8)}...") no comença per "AIzaSy" ni per "AQ". Les claus d'API de Google AI Studio sempre comencen per una d'aquestes dues seqüències. S'intentarà fer servir Vertex AI.`);
-  }
+if (hasValidApiKey) {
+  console.log('✨ Inicialitzant Gemini amb API Key de Google AI Studio.');
+  genAI = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+} else {
+  console.log('🌐 No s\'ha detectat API Key vàlida de Google AI Studio. Inicialitzant Gemini a través de Vertex AI (Google Cloud) amb credentials.json.');
+  genAI = new GoogleGenAI({ 
+    enterprise: true,
+    project: GCP_PROJECT_ID,
+    location: GCP_LOCATION 
+  });
+}
+const geminiModel = genAI;
 
-  if (hasValidApiKey) {
-    console.log('✨ Inicialitzant Gemini amb API Key de Google AI Studio.');
-    genAI = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
-  } else {
-    console.log('🌐 No s\'ha detectat API Key vàlida de Google AI Studio. Inicialitzant Gemini a través de Vertex AI (Google Cloud) amb credentials.json.');
-    genAI = new GoogleGenAI({ 
-      enterprise: true,
-      project: GCP_PROJECT_ID,
-      location: GCP_LOCATION 
-    });
-  }
-  geminiModel = genAI;
-
-  if (DB_HOST) {
-    pool = new Pool({
-      host: DB_HOST, port: parseInt(DB_PORT, 10),
-      database: DB_NAME, user: DB_USER, password: DB_PASSWORD,
-      max: 5,
-      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-    });
-  }
+let pool = null;
+if (DB_HOST) {
+  pool = new Pool({
+    host: DB_HOST, port: parseInt(DB_PORT, 10),
+    database: DB_NAME, user: DB_USER, password: DB_PASSWORD,
+    max: 5,
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  });
 }
 
 // ─── Language mapping for TTS ───
@@ -106,7 +102,7 @@ app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
     message: 'Servidor TouristTech funcionant correctament! 🚀',
-    mode: USE_MOCK === 'true' ? 'mock' : 'production',
+    mode: 'production',
     endpoints: [
       'POST /api/analyze  — Analitza una imatge de menú',
       'GET  /api/profile  — Obté el perfil de l\'usuari',
@@ -132,10 +128,7 @@ app.post('/api/analyze', async (req, res) => {
   console.log('  · Restriccions:', restrictions || []);
   console.log('  · Mida imatge (base64):', image.length, 'caràcters');
 
-  // ── MOCK MODE ──
-  if (USE_MOCK === 'true') {
-    return sendMockResponse(res, language, restrictions);
-  }
+
 
   // ── PRODUCTION MODE ──
   try {
@@ -247,9 +240,7 @@ function formatMockProfile(profile) {
 
 const mockProfiles = loadMockProfiles();
 
-// =============================================
-// RUTA: GET /api/profile?userId=...
-// =============================================
+
 app.get('/api/profile', async (req, res) => {
   const { userId } = req.query;
   if (!userId) return res.status(400).json({ error: 'userId is required' });
@@ -287,9 +278,6 @@ app.get('/api/profile', async (req, res) => {
 });
 
 
-// =============================================
-// RUTA: PUT /api/profile
-// =============================================
 app.put('/api/profile', async (req, res) => {
   const { userId, name, language, restrictions } = req.body;
   if (!userId) return res.status(400).json({ error: 'userId is required' });
@@ -478,88 +466,6 @@ async function uploadAudio(buffer, bucketName, fileName) {
 }
 
 
-// =============================================
-// MOCK DATA (when USE_MOCK=true or no GCP credentials)
-// =============================================
-function sendMockResponse(res, language, restrictions) {
-  setTimeout(() => {
-    const rest = restrictions || [];
-
-    const mockDishes = [
-      {
-        originalName: 'Pasta al pesto',
-        translatedName: getMockTranslation(language, 'Pasta amb pesto', 'Pesto pasta', 'Pâtes au pesto'),
-        ingredients: ['pasta (gluten)', 'basil', 'pine nuts', 'parmesan (lactose)', 'olive oil', 'garlic'],
-        safetyStatus: (rest.includes('gluten') || rest.includes('GLUTEN')) ? 'DANGER'
-          : (rest.includes('lactosa') || rest.includes('LACTOSE') || rest.includes('fruits_secs') || rest.includes('NUTS')) ? 'WARNING'
-            : 'SAFE',
-        safetyReason: rest.includes('gluten') || rest.includes('GLUTEN') ? 'Contains gluten (pasta)' : '',
-        isLocalSpecialty: false,
-        recommendation: 'Classic Italian pasta dish.',
-      },
-      {
-        originalName: 'Bistecca alla fiorentina',
-        translatedName: getMockTranslation(language, 'Bistec a la florentina', 'Florentine steak', 'Bifteck florentin'),
-        ingredients: ['beef', 'olive oil', 'rosemary', 'salt', 'pepper'],
-        safetyStatus: (rest.includes('vegetaria') || rest.includes('VEGETARIAN') || rest.includes('vega') || rest.includes('VEGAN')) ? 'DANGER' : 'SAFE',
-        safetyReason: (rest.includes('vegetaria') || rest.includes('VEGETARIAN')) ? 'Contains meat' : '',
-        isLocalSpecialty: true,
-        recommendation: 'Iconic Tuscan specialty! A must-try.',
-      },
-      {
-        originalName: 'Tiramisù',
-        translatedName: 'Tiramisú',
-        ingredients: ['mascarpone (lactose)', 'eggs', 'sugar', 'coffee', 'ladyfingers (gluten)', 'cocoa'],
-        safetyStatus: (rest.includes('gluten') || rest.includes('GLUTEN') || rest.includes('lactosa') || rest.includes('LACTOSE') || rest.includes('EGGS')) ? 'DANGER' : 'SAFE',
-        safetyReason: 'Contains gluten, lactose, and eggs.',
-        isLocalSpecialty: true,
-        recommendation: 'Classic Italian dessert.',
-      },
-      {
-        originalName: 'Insalata Caprese',
-        translatedName: getMockTranslation(language, 'Amanida Caprese', 'Caprese salad', 'Salade Caprese'),
-        ingredients: ['tomatoes', 'mozzarella (lactose)', 'basil', 'olive oil'],
-        safetyStatus: (rest.includes('lactosa') || rest.includes('LACTOSE') || rest.includes('vega') || rest.includes('VEGAN')) ? 'WARNING' : 'SAFE',
-        safetyReason: rest.includes('lactosa') || rest.includes('LACTOSE') ? 'Contains mozzarella (dairy)' : '',
-        isLocalSpecialty: false,
-        recommendation: 'Light and fresh option.',
-      },
-      {
-        originalName: 'Risotto ai funghi',
-        translatedName: getMockTranslation(language, 'Risotto de bolets', 'Mushroom risotto', 'Risotto aux champignons'),
-        ingredients: ['arborio rice', 'mushrooms', 'butter (lactose)', 'parmesan (lactose)', 'onion', 'white wine (alcohol)'],
-        safetyStatus: (rest.includes('lactosa') || rest.includes('LACTOSE')) ? 'WARNING'
-          : (rest.includes('ALCOHOL') || rest.includes('alcohol')) ? 'WARNING'
-            : 'SAFE',
-        safetyReason: 'May contain dairy and traces of alcohol from white wine.',
-        isLocalSpecialty: false,
-        recommendation: 'Rich and comforting dish.',
-      },
-    ];
-
-    const response = {
-      success: true,
-      originalText: 'MENÙ DEL GIORNO\n-------------------\nPasta al pesto............€9\nBistecca alla fiorentina..€18\nInsalata Caprese..........€7\nRisotto ai funghi.........€12\n-------------------\nDOLCI\nTiramisù..................€5',
-      fullTranslatedText: 'Menú del dia: Pasta amb pesto, Bistec a la florentina, Amanida Caprese, Risotto de bolets, Tiramisú',
-      dishes: mockDishes,
-      generalRecommendation: '⭐ La Bistecca alla Fiorentina és l\'especialitat estrella d\'aquest restaurant, un clàssic de la cuina toscana!',
-      audioUrl: '',
-      language,
-      processedAt: new Date().toISOString(),
-      note: 'DEMO: Dades simulades. Activa USE_MOCK=false per connectar les APIs de GCP.',
-    };
-
-    console.log('← Resposta MOCK enviada amb', mockDishes.length, 'plats');
-    res.json(response);
-  }, 1500);
-}
-
-function getMockTranslation(lang, ca, en, fr) {
-  if (lang === 'en') return en;
-  if (lang === 'fr') return fr;
-  return ca;
-}
-
 
 // =============================================
 // INICIEM EL SERVIDOR
@@ -568,7 +474,7 @@ app.listen(PORT, () => {
   console.log('');
   console.log('🚀 Servidor TouristTech iniciat!');
   console.log(`📡 Escoltant a: http://localhost:${PORT}`);
-  console.log(`🔧 Mode: ${USE_MOCK === 'true' ? 'MOCK (dades simulades)' : 'PRODUCCIÓ (APIs GCP)'}`);
+  console.log(`🔧 Mode: PRODUCCIÓ (APIs GCP)`);
   console.log('');
   console.log('📋 Rutes disponibles:');
   console.log(`   GET  http://localhost:${PORT}/api/health`);

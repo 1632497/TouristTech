@@ -14,5 +14,21 @@
         "notes": null
       }
     ]
+  },
+  "Yxt311G8gghbpfAPSyE1LKKlvFy2": {
+    "name": "Ivan",
+    "language": "es",
+    "restrictions": [
+      {
+        "restriction_type": "GLUTEN",
+        "severity": "ALLERGY",
+        "notes": null
+      },
+      {
+        "restriction_type": "EGGS",
+        "severity": "PREFERENCE",
+        "notes": null
+      }
+    ]
   }
 }
