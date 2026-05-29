@@ -7,37 +7,38 @@
 
 'use strict';
 
-const express  = require('express');
-const cors     = require('cors');
-const fs       = require('fs');
-const path     = require('path');
+const express = require('express');
+const cors = require('cors');
+const fs = require('fs');
+const path = require('path');
 require('dotenv').config();
 
 // GCP SDK imports
-const { Storage }                  = require('@google-cloud/storage');
-const vision                       = require('@google-cloud/vision');
+const { Storage } = require('@google-cloud/storage');
+const vision = require('@google-cloud/vision');
 const { TranslationServiceClient } = require('@google-cloud/translate').v3;
-const textToSpeech                 = require('@google-cloud/text-to-speech');
-const { VertexAI }                 = require('@google-cloud/vertexai');
-const { Pool }                     = require('pg');
+const textToSpeech = require('@google-cloud/text-to-speech');
+const { GoogleGenAI } = require('@google/genai');
+const { Pool } = require('pg');
 
 // Gemini prompt module (shared with Cloud Function)
 const { buildGeminiPrompt } = require('./functions/processMenuImage/gemini_prompt');
 
 // ─── Environment variables ───
 const {
-  PORT              = 3000,
-  GCP_PROJECT_ID    = 'touristtech-prod',
-  GCP_LOCATION      = 'us-central1',
+  PORT = 3000,
+  GCP_PROJECT_ID = 'touristtech-prod',
+  GCP_LOCATION = 'us-central1',
   GCP_IMAGES_BUCKET = 'touristtech-menu-images',
-  GCP_AUDIO_BUCKET  = 'touristtech-audio-output',
-  GEMINI_MODEL      = 'gemini-2.0-flash-001',
+  GCP_AUDIO_BUCKET = 'touristtech-audio-output',
+  GEMINI_MODEL = 'gemini-1.5-flash',
+  GEMINI_API_KEY,
   DB_HOST,
-  DB_PORT           = '5432',
+  DB_PORT = '5432',
   DB_NAME,
   DB_USER,
   DB_PASSWORD,
-  USE_MOCK          = 'false',  // Set to 'true' to use mock data (no GCP APIs)
+  USE_MOCK = 'false',  // Set to 'true' to use mock data (no GCP APIs)
 } = process.env;
 
 // ─── Express setup ───
@@ -50,13 +51,35 @@ app.use(express.static(path.join(__dirname, '..', 'frontend')));
 let storageClient, visionClient, translateClient, ttsClient, geminiModel, pool;
 
 if (USE_MOCK !== 'true') {
-  storageClient   = new Storage({ projectId: GCP_PROJECT_ID });
-  visionClient    = new vision.ImageAnnotatorClient();
+  storageClient = new Storage({ projectId: GCP_PROJECT_ID });
+  visionClient = new vision.ImageAnnotatorClient();
   translateClient = new TranslationServiceClient();
-  ttsClient       = new textToSpeech.TextToSpeechClient();
+  ttsClient = new textToSpeech.TextToSpeechClient();
 
-  const vertexAI  = new VertexAI({ project: GCP_PROJECT_ID, location: GCP_LOCATION });
-  geminiModel     = vertexAI.getGenerativeModel({ model: GEMINI_MODEL });
+  // Robust initialization for Gemini:
+  // 1. If a valid Google AI Studio key is provided, use it.
+  // 2. Otherwise, fall back to Vertex AI using Google Cloud credentials.json.
+  let genAI;
+  const hasValidApiKey = GEMINI_API_KEY && 
+                         GEMINI_API_KEY !== 'posa_aqui_la_teva_clau_AIzaSy' && 
+                         (GEMINI_API_KEY.startsWith('AIzaSy') || GEMINI_API_KEY.startsWith('AQ'));
+
+  if (GEMINI_API_KEY && GEMINI_API_KEY !== 'posa_aqui_la_teva_clau_AIzaSy' && !GEMINI_API_KEY.startsWith('AIzaSy') && !GEMINI_API_KEY.startsWith('AQ')) {
+    console.warn(`⚠️ ALERTA: La clau GEMINI_API_KEY de .env ("${GEMINI_API_KEY.slice(0, 8)}...") no comença per "AIzaSy" ni per "AQ". Les claus d'API de Google AI Studio sempre comencen per una d'aquestes dues seqüències. S'intentarà fer servir Vertex AI.`);
+  }
+
+  if (hasValidApiKey) {
+    console.log('✨ Inicialitzant Gemini amb API Key de Google AI Studio.');
+    genAI = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+  } else {
+    console.log('🌐 No s\'ha detectat API Key vàlida de Google AI Studio. Inicialitzant Gemini a través de Vertex AI (Google Cloud) amb credentials.json.');
+    genAI = new GoogleGenAI({ 
+      enterprise: true,
+      project: GCP_PROJECT_ID,
+      location: GCP_LOCATION 
+    });
+  }
+  geminiModel = genAI;
 
   if (DB_HOST) {
     pool = new Pool({
@@ -152,24 +175,24 @@ app.post('/api/analyze', async (req, res) => {
     console.log('  [4/4] Generating TTS audio...');
     let audioUrl = '';
     try {
-      const narration  = buildNarration(geminiResult, language || 'ca');
-      const audioBuf   = await doTTS(narration, language || 'ca');
-      const audioFile  = `audio/web/${Date.now()}.mp3`;
-      audioUrl         = await uploadAudio(audioBuf, GCP_AUDIO_BUCKET, audioFile);
+      const narration = buildNarration(geminiResult, language || 'ca');
+      const audioBuf = await doTTS(narration, language || 'ca');
+      const audioFile = `audio/web/${Date.now()}.mp3`;
+      audioUrl = await uploadAudio(audioBuf, GCP_AUDIO_BUCKET, audioFile);
     } catch (ttsErr) {
       console.warn('  ⚠ TTS failed, skipping audio:', ttsErr.message);
     }
 
     // Build response
     const response = {
-      success:        true,
-      originalText:   ocrText,
+      success: true,
+      originalText: ocrText,
       fullTranslatedText,
-      dishes:         geminiResult.dishes,
+      dishes: geminiResult.dishes,
       generalRecommendation: geminiResult.generalRecommendation || '',
       audioUrl,
       language,
-      processedAt:    new Date().toISOString(),
+      processedAt: new Date().toISOString(),
     };
 
     console.log('← Resposta enviada amb', geminiResult.dishes.length, 'plats');
@@ -251,10 +274,10 @@ app.get('/api/profile', async (req, res) => {
     );
 
     res.json({
-      id:          user.id,
-      name:        user.display_name,
-      email:       user.email,
-      language:    user.native_language,
+      id: user.id,
+      name: user.display_name,
+      email: user.email,
+      language: user.native_language,
       restrictions: restrictionsQ.rows,
     });
   } catch (err) {
@@ -301,9 +324,9 @@ app.put('/api/profile', async (req, res) => {
 
     if (restrictions && restrictions.length > 0) {
       for (const r of restrictions) {
-        const rType    = (r.type || r).toString().toUpperCase();
+        const rType = (r.type || r).toString().toUpperCase();
         const severity = (r.severity || 'PREFERENCE').toUpperCase();
-        const notes    = r.notes || null;
+        const notes = r.notes || null;
 
         await client.query(`
           INSERT INTO dietary_profiles (user_id, restriction_type, severity, notes)
@@ -359,30 +382,54 @@ app.get('/api/history', async (req, res) => {
 async function callGemini(ocrText, restrictions, language) {
   const { systemInstruction, userPrompt } = buildGeminiPrompt(ocrText, restrictions, language);
 
-  const result = await geminiModel.generateContent({
-    contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
-    systemInstruction: { parts: [{ text: systemInstruction }] },
-    generationConfig: { maxOutputTokens: 2048, temperature: 0.2, responseMimeType: 'application/json' },
+  const response = await geminiModel.models.generateContent({
+    model: GEMINI_MODEL,
+    contents: userPrompt,
+    config: {
+      systemInstruction,
+      maxOutputTokens: 8192,
+      temperature: 0.2,
+      responseMimeType: 'application/json',
+    },
   });
 
-  const rawText = result.response?.candidates?.[0]?.content?.parts?.[0]?.text;
+  const rawText = response.text;
   if (!rawText) throw new Error('Gemini returned empty response');
 
   const cleaned = rawText.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim();
-  const parsed = JSON.parse(cleaned);
+  let parsed;
+  try {
+    parsed = JSON.parse(cleaned);
+  } catch (parseErr) {
+    console.error('✗ Error parsejant el JSON retornat per Gemini:');
+    console.error('---------------- RAW TEXT INICI ----------------');
+    console.error(rawText);
+    console.error('---------------- RAW TEXT FI ----------------');
+
+    // Intentem fer reparacions comunes automàticament (trailing commas, control chars)
+    try {
+      const repaired = cleaned
+        .replace(/,(\s*[\]}])/g, '$1') // elimina comes finals abans de ] o }
+        .replace(/[\u0000-\u001F]+/g, ' '); // elimina caràcters de control no permesos
+      parsed = JSON.parse(repaired);
+      console.log('✨ S\'ha reparat i recuperat el JSON del menú correctament!');
+    } catch (secondErr) {
+      throw new Error(`Error de format JSON en la resposta de Gemini: ${parseErr.message}`);
+    }
+  }
 
   if (!parsed.dishes || !Array.isArray(parsed.dishes)) {
     throw new Error('Gemini response missing "dishes" array');
   }
 
   parsed.dishes = parsed.dishes.map(d => ({
-    originalName:    d.originalName   || 'Unknown',
-    translatedName:  d.translatedName || d.originalName || 'Unknown',
-    ingredients:     Array.isArray(d.ingredients) ? d.ingredients : [],
-    safetyStatus:    ['SAFE','WARNING','DANGER'].includes(d.safetyStatus) ? d.safetyStatus : 'WARNING',
-    safetyReason:    d.safetyReason   || '',
+    originalName: d.originalName || 'Unknown',
+    translatedName: d.translatedName || d.originalName || 'Unknown',
+    ingredients: Array.isArray(d.ingredients) ? d.ingredients : [],
+    safetyStatus: ['SAFE', 'WARNING', 'DANGER'].includes(d.safetyStatus) ? d.safetyStatus : 'WARNING',
+    safetyReason: d.safetyReason || '',
     isLocalSpecialty: Boolean(d.isLocalSpecialty),
-    recommendation:  d.recommendation || '',
+    recommendation: d.recommendation || '',
   }));
 
   return parsed;
@@ -444,8 +491,8 @@ function sendMockResponse(res, language, restrictions) {
         translatedName: getMockTranslation(language, 'Pasta amb pesto', 'Pesto pasta', 'Pâtes au pesto'),
         ingredients: ['pasta (gluten)', 'basil', 'pine nuts', 'parmesan (lactose)', 'olive oil', 'garlic'],
         safetyStatus: (rest.includes('gluten') || rest.includes('GLUTEN')) ? 'DANGER'
-                    : (rest.includes('lactosa') || rest.includes('LACTOSE') || rest.includes('fruits_secs') || rest.includes('NUTS')) ? 'WARNING'
-                    : 'SAFE',
+          : (rest.includes('lactosa') || rest.includes('LACTOSE') || rest.includes('fruits_secs') || rest.includes('NUTS')) ? 'WARNING'
+            : 'SAFE',
         safetyReason: rest.includes('gluten') || rest.includes('GLUTEN') ? 'Contains gluten (pasta)' : '',
         isLocalSpecialty: false,
         recommendation: 'Classic Italian pasta dish.',
@@ -482,8 +529,8 @@ function sendMockResponse(res, language, restrictions) {
         translatedName: getMockTranslation(language, 'Risotto de bolets', 'Mushroom risotto', 'Risotto aux champignons'),
         ingredients: ['arborio rice', 'mushrooms', 'butter (lactose)', 'parmesan (lactose)', 'onion', 'white wine (alcohol)'],
         safetyStatus: (rest.includes('lactosa') || rest.includes('LACTOSE')) ? 'WARNING'
-                    : (rest.includes('ALCOHOL') || rest.includes('alcohol')) ? 'WARNING'
-                    : 'SAFE',
+          : (rest.includes('ALCOHOL') || rest.includes('alcohol')) ? 'WARNING'
+            : 'SAFE',
         safetyReason: 'May contain dairy and traces of alcohol from white wine.',
         isLocalSpecialty: false,
         recommendation: 'Rich and comforting dish.',

@@ -1,0 +1,11 @@
+# Credencials — MAI pujar a Git
+backend/credentials.json
+backend/.env
+*.json.key
+
+# Node
+backend/node_modules/
+node_modules/
+
+# Logs
+*.log

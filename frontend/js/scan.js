@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
       loadingText.textContent = 'Enviant al servidor...';
       const token = await user.getIdToken();
-      const response = await fetch(`${ANALYZE_URL}/api/analyze`, {
+      const response = await fetch(`${BACKEND_URL}/api/analyze`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
